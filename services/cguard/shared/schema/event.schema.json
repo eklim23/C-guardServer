@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antillm.local/schema/event.schema.json",
+  "title": "antiLLM Event",
+  "type": "object",
+  "required": [
+    "event_type",
+    "severity",
+    "timestamp",
+    "session_id",
+    "user_id",
+    "client_version",
+    "evidence"
+  ],
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "DEBUGGER_DETECTED",
+        "DLL_INJECTION_DETECTED",
+        "FOCUS_LOSS_REPEATED",
+        "CLIPBOARD_ABUSE_DETECTED",
+        "HEARTBEAT_ANOMALY",
+        "SESSION_INTEGRITY_FAILURE",
+        "KERNEL_TAMPER_SIGNAL",
+        "KERNEL_CALLBACK_ANOMALY",
+        "PROCESS_STARTED",
+        "PROCESS_TERMINATED",
+        "PROCESS_POLICY_MATCH",
+        "NETWORK_CONNECTION_OBSERVED",
+        "NETWORK_POLICY_MATCH",
+        "VM_INDICATOR_DETECTED",
+        "REMOTE_TOOL_DETECTED",
+        "POLICY_ACTION_APPLIED",
+        "CLIENT_RUNTIME_ERROR",
+        "CLIENT_UPLOAD_STATUS",
+        "CLIENT_VERSION_UNSUPPORTED",
+        "CLIENT_VERSION_DEPRECATED",
+        "CLIENT_VERSION_INVALID",
+        "EVENT_IDENTITY_OVERRIDE_APPLIED"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "user_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "client_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "risk_score": {
+      "type": "number",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": true
+}

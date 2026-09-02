@@ -1,0 +1,109 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cguard-postgres
+    environment:
+      TZ: Asia/Seoul
+      POSTGRES_DB: ops_db
+      POSTGRES_USER: ops_svc
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ops_password}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - cguard-admin-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ops_svc -d ops_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  cguard-server:
+    build:
+      context: ../services/cguard
+      dockerfile: Dockerfile
+    container_name: cguard-server
+    env_file:
+      - ../.env
+    environment:
+      TZ: Asia/Seoul
+      PORT: "8500"
+      STATE_MODE: postgres
+      STATE_PG_CONNECTION_STRING: postgresql://ops_svc:${POSTGRES_PASSWORD:-ops_password}@postgres:5432/ops_db
+      STATE_PG_SCHEMA: cstrike
+      STATE_PG_PSQL_BIN: psql
+      ADMIN_API_KEY: ${CGUARD_ADMIN_API_KEY:-cguard-admin-key-change-me}
+      ADMIN_SIGNING_SECRET: ${CGUARD_ADMIN_SIGNING_SECRET:-cguard-admin-signing-secret}
+      ADMIN_TOKEN_TTL_SEC: ${CGUARD_ADMIN_TOKEN_TTL_SEC:-14400}
+      CGUARD_ARCHIVE_DIR: /data/cguard-archive
+      CGUARD_ARCHIVE_SESSION_GROUP_SIZE: "7"
+      CGUARD_ARCHIVE_MEMORY_EVENT_LIMIT: ${CGUARD_ARCHIVE_MEMORY_EVENT_LIMIT:-50000}
+      CGUARD_ADMIN_USERNAME: ${CGUARD_ADMIN_USERNAME:-}
+      CGUARD_ADMIN_PASSWORD: ${CGUARD_ADMIN_PASSWORD:-}
+      CGUARD_ADMIN_ROLE: ${CGUARD_ADMIN_ROLE:-enforcer}
+      INTEGRATION_API_ENABLED: "true"
+      CGUARD_INTEGRATION_TOKEN: ${CGUARD_INTEGRATION_TOKEN:-cguard-integration-token-change-me}
+    expose:
+      - "8500"
+    volumes:
+      - cguard_archive:/data/cguard-archive
+    networks:
+      - cguard-admin-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8500/health | grep -q '\"status\":\"ok\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  cguard-frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: cguard-frontend
+    environment:
+      TZ: Asia/Seoul
+      CGUARD_API_URL: http://cguard-server:8500
+      NEXT_PUBLIC_API_URL: http://cguard-server:8500
+    expose:
+      - "3000"
+    networks:
+      - cguard-admin-network
+    depends_on:
+      cguard-server:
+        condition: service_healthy
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: ./nginx
+    container_name: cguard-nginx
+    environment:
+      TZ: Asia/Seoul
+      SERVER_IP: ${SERVER_IP:-127.0.0.1}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8443:8443"
+    volumes:
+      - ./nginx/ssl:/etc/nginx/ssl
+    networks:
+      - cguard-admin-network
+    depends_on:
+      - cguard-frontend
+      - cguard-server
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  cguard_archive:
+
+networks:
+  cguard-admin-network:
+    name: cguard-admin-network
+    driver: bridge

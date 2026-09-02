@@ -1,0 +1,29 @@
+# Linux 배포 환경 호환 — 줄바꿈 강제 LF
+* text=auto eol=lf
+
+# 쉘/파이썬/JS/설정: LF 고정
+*.sh  text eol=lf
+*.py  text eol=lf
+*.js  text eol=lf
+*.ts  text eol=lf
+*.tsx text eol=lf
+*.jsx text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.conf text eol=lf
+*.md   text eol=lf
+Dockerfile text eol=lf
+
+# 바이너리 — 변환 금지
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.tar.gz binary
+*.woff binary
+*.woff2 binary

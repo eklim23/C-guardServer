@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+
+# Node.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# 환경 설정
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+postgres_data/
+redis_data/
+
+# 백업
+backups/
+
+# 빌드 산출물
+dist/
+build/
+*.log
+*.tgz
